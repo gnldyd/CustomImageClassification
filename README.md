@@ -10,21 +10,21 @@ This program supports AlexNet, VGGNet, and ResNet as training models.
 When you have the data below,
 
 <figure class="image">
+  <figcaption>(predict1.jpg)</figcaption>
   <img src="docs/predict1.jpg" width="100" height="100">
-  <figcaption>predict1.jpg</figcaption>
+  <figcaption>(predict2.jpg)</figcaption>
   <img src="docs/predict2.jpg" width="100" height="100">
-  <figcaption>predict2.jpg</figcaption>
+  <figcaption>(predict3.jpg)</figcaption>
   <img src="docs/predict3.jpg" width="100" height="100">
-  <figcaption>predict3.jpg</figcaption>
 </figure>
 
 The program categorizes the images as follows.
 
 <figure class="image">
+  <figcaption>(Before predict)</figcaption>
   <img src="docs/before_predict.jpg" width="255" height="131">
-  <figcaption>Before predict</figcaption>
+  <figcaption>(After predict)</figcaption>
   <img src="docs/after_predict.jpg" width="255" height="264">
-  <figcaption>After predict</figcaption>
 </figure>
 
 ---
