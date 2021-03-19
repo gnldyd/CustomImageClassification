@@ -69,18 +69,18 @@ def train(device, model, epochs, train_loader, criterion, optimizer, batch_size,
         for data, label in train_loader:
             data, label = data.to(device), label.to(device)
 
-            output = model(data)    # batch_size 차원의 데이터를 model에 투입하여 훈련
-            loss = criterion(output, label)   # 손실 함수의 값 계산
-            optimizer.zero_grad()   # pytorch의 변화도를 0으로 설정한다. (기존 변화도에 누적되는 방식이기 때문)
-            loss.backward()         # 역전파를 수행하여 가중치의 변화량을 계산
-            optimizer.step()        # 가중치의 변화량을 적용하여 가중치 업데이트
+            output = model(data)
+            loss = criterion(output, label)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
 
             train_loss += loss.item()
-            predict = output.max(1)[1]  # (batch_size, classes) 데이터에서 가장 큰 값을 가진 class 노드의 index 추출
-            train_accuracy += predict.eq(label).sum().item()   # batch_size 데이터 중 정답과 일치한 개수
+            predict = output.max(1)[1]
+            train_accuracy += predict.eq(label).sum().item()
         else:
-            train_loss /= len(train_loader)  # len(train_loader) = (전체 훈련 데이터 수 / batch_size)
-            train_accuracy *= (100 / len(train_loader.dataset))  # len(train_loader.dataset) = 전체 훈련 데이터 수
+            train_loss /= len(train_loader)
+            train_accuracy *= (100 / len(train_loader.dataset))
             if printable:
                 print("Train Result Epoch = {}, Loss = {:.4f}, Accuracy = {:.4f}%)".format(epoch, train_loss, train_accuracy))
     else:
@@ -88,8 +88,8 @@ def train(device, model, epochs, train_loader, criterion, optimizer, batch_size,
 
 
 def test(device, model, test_loader, criterion, printable=True):
-    model.eval()            # 평가 모드 적용 - 드롭아웃, 배치정규화 비활성화
-    with torch.no_grad():   # 역전파 비활성화 -> 메모리 절약 -> 연산 속도 상승
+    model.eval()
+    with torch.no_grad():
         test_loss = 0
         test_accuracy = 0
         for data, target in test_loader:
@@ -98,11 +98,11 @@ def test(device, model, test_loader, criterion, printable=True):
             output = model(data)
 
             test_loss += criterion(output, target).item()
-            predict = output.max(1)[1]  # (batch_size, classes) 데이터에서 가장 큰 값을 가진 class 노드의 index 추출
-            test_accuracy += predict.eq(target).sum().item()   # batch_size 데이터 중 정답과 일치한 개수
+            predict = output.max(1)[1]
+            test_accuracy += predict.eq(target).sum().item()
         else:
-            test_loss /= len(test_loader)  # len(test_loader) = (전체 시험 데이터 수 / batch_size)
-            test_accuracy *= (100 / len(test_loader.dataset)) # len(test_loader.dataset) = 전체 시험 데이터 수
+            test_loss /= len(test_loader)
+            test_accuracy *= (100 / len(test_loader.dataset))
             if printable:
                 print("Test Result: Loss = {:.4f}, Accuracy = {:.4f}%)".format(test_loss, test_accuracy))
         return test_loss, test_accuracy
@@ -122,41 +122,35 @@ def predict(device, predict_data_path, model, transform, classes, printable):
 
 
 def run(args):
-
-    # 필요 폴더 생성
     if not os.path.isdir(args.data_path):
         os.mkdir(args.data_path)
 
-    # gpu 또는 cpu 장치 설정
     device = get_device("cuda:" + str(args.gpu_index))
 
     transform = transforms.Compose([
         transforms.Resize(256),
         transforms.CenterCrop(224),
-        transforms.ToTensor(),  # 데이터 타입을 Tensor로 변형
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))  # 데이터의 Nomalize
+        transforms.ToTensor(),
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
 
-    # DataLoader 생성
     train_loader, test_loader = get_loaders(args.data_path, transform, args.batch_size, args.shuffle)
 
     model = get_model(args.model_name, args.model_pretrained, args.classes)
     model = model.to(device)
     if args.load_model:
-        model.load_state_dict(torch.load(args.load_model_name))  # 모델 불러오기
+        model.load_state_dict(torch.load(args.load_model_name))
         print("Model loaded at:", args.load_model_name)
     if args.gpu_parallel:
-        model = nn.DataParallel(model)  # 데이터 병렬 처리  
-    criterion = nn.CrossEntropyLoss().to(device)  # 손실 함수 설정
-    optimizer = torch.optim.SGD(model.parameters(), lr=args.lr)  # 최적화 설정
+        model = nn.DataParallel(model)  
+    criterion = nn.CrossEntropyLoss().to(device)
+    optimizer = torch.optim.SGD(model.parameters(), lr=args.lr)
 
-    # 훈련
     if args.epochs > 0:
         lastest_train_loss, lastest_train_accuracy = train(device, model, args.epochs, train_loader, criterion, optimizer, args.batch_size, args.printable)
         if not args.printable:
             print("Lastest Train Result: Loss = {:.4f}, Accuracy = {:.4f}%)".format(lastest_train_loss, lastest_train_accuracy))
 
-    # 시험
     test_loss, test_accuracy = test(device, model, test_loader, criterion, args.printable)
     if not args.printable:
         print("Test Result: Loss = {:.4f}, Accuracy = {:.4f}%)".format(test_loss, test_accuracy))
@@ -165,7 +159,6 @@ def run(args):
         torch.save(model.state_dict(), args.save_model_name)
         print("Model saved at:", args.save_model_name)
 
-    # 예측
     if args.predict:
         predict(device, args.predict_data_path, model, transform, train_loader.dataset.classes, args.printable)
         print("Image classification completed at", args.predict_data_path)
