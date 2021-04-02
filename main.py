@@ -61,7 +61,7 @@ def get_model(model_name, is_pretrained, num_classes):
     return model
 
 
-def train(device, model, epochs, train_loader, criterion, optimizer, batch_size, printable=True):
+def train(device, model, epochs, train_loader, criterion, optimizer, printable=True):
     model.train()
     for epoch in range(1, epochs+1):
         train_loss = 0
@@ -134,7 +134,7 @@ def run(args):
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
 
-    train_loader, test_loader = get_loaders(args.data_path, transform, args.batch_size, args.shuffle)
+    train_loader, test_loader = get_loaders(args.data_path, transform, args.shuffle)
 
     model = get_model(args.model_name, args.model_pretrained, args.classes)
     model = model.to(device)
