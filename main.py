@@ -134,7 +134,7 @@ def run(args):
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
 
-    train_loader, test_loader = get_loaders(args.data_path, transform, args.shuffle)
+    train_loader, test_loader = get_loaders(args.data_path, transform, args.batch_size, args.shuffle)
 
     model = get_model(args.model_name, args.model_pretrained, args.classes)
     model = model.to(device)
@@ -147,7 +147,7 @@ def run(args):
     optimizer = torch.optim.SGD(model.parameters(), lr=args.lr)
 
     if args.epochs > 0:
-        lastest_train_loss, lastest_train_accuracy = train(device, model, args.epochs, train_loader, criterion, optimizer, args.batch_size, args.printable)
+        lastest_train_loss, lastest_train_accuracy = train(device, model, args.epochs, train_loader, criterion, optimizer, args.printable)
         if not args.printable:
             print("Lastest Train Result: Loss = {:.4f}, Accuracy = {:.4f}%)".format(lastest_train_loss, lastest_train_accuracy))
 
