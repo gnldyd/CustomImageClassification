@@ -70,7 +70,7 @@ def get_model(model_name, is_pretrained, num_classes):
     return model
 
 
-def train(device, model, epochs, train_loader, criterion, optimizer, printable=True):
+def train(device, model, epochs, train_loader, criterion, optimizer):
     model.train()
     for epoch in range(1, epochs+1):
         train_loss = 0
@@ -90,13 +90,10 @@ def train(device, model, epochs, train_loader, criterion, optimizer, printable=T
         else:
             train_loss /= len(train_loader)
             train_accuracy *= (100 / len(train_loader.dataset))
-            if printable:
-                print("Train Result Epoch = {}, Loss = {:.4f}, Accuracy = {:.4f}%)".format(epoch, train_loss, train_accuracy))
-    else:
-        return train_loss, train_accuracy
+            print("Train Result Epoch = {}, Loss = {:.4f}, Accuracy = {:.4f}%)".format(epoch, train_loss, train_accuracy))
 
 
-def test(device, model, test_loader, criterion, printable=True):
+def test(device, model, test_loader, criterion):
     model.eval()
     with torch.no_grad():
         test_loss = 0
@@ -112,22 +109,19 @@ def test(device, model, test_loader, criterion, printable=True):
         else:
             test_loss /= len(test_loader)
             test_accuracy *= (100 / len(test_loader.dataset))
-            if printable:
-                print("Test Result: Loss = {:.4f}, Accuracy = {:.4f}%)".format(test_loss, test_accuracy))
-        return test_loss, test_accuracy
+            print("Test Result: Loss = {:.4f}, Accuracy = {:.4f}%)".format(test_loss, test_accuracy))
 
 
-def predict(device, predict_data_path, model, transform, classes, printable):
+def predict(device, predict_data_path, model, transform, classes):
     predict_datasets = os.listdir(predict_data_path)
     for image in predict_datasets:
         if os.path.isfile(predict_data_path + image):
             data = transform(PIL.Image.open(predict_data_path + image)).to(device).unsqueeze(0)
             result = classes[model(data).max(1)[1]]
-            if printable:
-                print("Classification: " + predict_data_path + image + " is classified as " + result + ".")
             if not os.path.isdir(predict_data_path + result):
                 os.mkdir(predict_data_path + result)
             shutil.copy2(predict_data_path + image, predict_data_path + result + "/" + image)
+            print("Classification: " + predict_data_path + image + " is classified as " + result + ".")
 
 
 def run(args):
@@ -156,20 +150,15 @@ def run(args):
     optimizer = torch.optim.SGD(model.parameters(), lr=args.lr)
 
     if args.epochs > 0:
-        lastest_train_loss, lastest_train_accuracy = train(device, model, args.epochs, train_loader, criterion, optimizer, args.printable)
-        if not args.printable:
-            print("Lastest Train Result: Loss = {:.4f}, Accuracy = {:.4f}%)".format(lastest_train_loss, lastest_train_accuracy))
-
-    test_loss, test_accuracy = test(device, model, test_loader, criterion, args.printable)
-    if not args.printable:
-        print("Test Result: Loss = {:.4f}, Accuracy = {:.4f}%)".format(test_loss, test_accuracy))
+        train(device, model, args.epochs, train_loader, criterion, optimizer)
+    test(device, model, test_loader, criterion)
 
     if args.save_model:
         torch.save(model.state_dict(), args.save_model_name)
         print("Model saved at:", args.save_model_name)
 
     if args.predict:
-        predict(device, args.predict_data_path, model, transform, train_loader.dataset.classes, args.printable)
+        predict(device, args.predict_data_path, model, transform, train_loader.dataset.classes)
         print("Image classification completed at", args.predict_data_path)
 
 
@@ -194,7 +183,6 @@ if __name__ == "__main__":
     parser.add_argument('--classes', type=int, default=10, help='(Important) Set how many categories your data is in.')
     parser.add_argument('--lr', type=float, default=0.001, help='Set the learning rate of the model.')
     parser.add_argument('--epochs', type=int, default=30, help='Set how many times the model will be trained. If it is 0, it is tested immediately without training.')
-    parser.add_argument('--printable', type=str2bool, default=True, help='Print the progress on the screen. True is recommended.')
     parser.add_argument('--load_model', type=str2bool, default=False, help='This option is to set whether to use the saved model.')
     parser.add_argument('--load_model_name', type=str, default="./data/model.pt", help='Set the location of the saved model. (The value of load_model must be True.)')
     parser.add_argument('--save_model', type=str2bool, default=False, help='Set the location to save the model. (The value of save_model must be True.)')
