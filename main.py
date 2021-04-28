@@ -56,6 +56,15 @@ def get_model(model_name, is_pretrained, num_classes):
         elif "101" in model_name:
             model = models.resnet101(pretrained=is_pretrained)
         model.fc = nn.Linear(model.fc.in_features, num_classes)
+    elif "mnas" in model_name.lower():
+        model = models.mnasnet1_0(pretrained=is_pretrained)
+        if "0_5" in model_name:
+            model = models.mnasnet0_5(pretrained=is_pretrained)
+        elif "0_75" in model_name:
+            model = models.mnasnet0_75(pretrained=False) # don't have pretrainted model
+        elif "1_3" in model_name:
+            model = models.mnasnet1_3(pretrained=False) # don't have pretrainted model
+        model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, num_classes)
     if model is None:
         raise Exception("There is no matching model name.")
     return model
@@ -164,23 +173,32 @@ def run(args):
         print("Image classification completed at", args.predict_data_path)
 
 
+def str2bool(v):
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--gpu_parallel', type=bool, default=False, help='When there are multiple GPUs, you can train GPUs in parallel by setting this option to True.')
+    parser.add_argument('--gpu_parallel', type=str2bool, default=False, help='When there are multiple GPUs, you can train GPUs in parallel by setting this option to True.')
     parser.add_argument('--gpu_index', type=int, default=0, help='You can choose which GPU to use. Index starts from 0. (The gpu_parallel option should be False.)')
     parser.add_argument('--data_path', type=str, default="./data/", help='You can set the location of your image data. (The internal structure should be data/train, data/test, and data/predict.) (It may be helpful to refer to the data folder in the example.)')
     parser.add_argument('--batch_size', type=int, default=8, help='When training the model, you can set the batch size.')
-    parser.add_argument('--shuffle', type=bool, default=True, help='Determine whether to shuffle training data and test data.')
+    parser.add_argument('--shuffle', type=str2bool, default=True, help='Determine whether to shuffle training data and test data.')
     parser.add_argument('--model_name', type=str, default="resnet", help='Set up the model to be trained. resnet152 is set by default.')
-    parser.add_argument('--model_pretrained', type=bool, default=True, help='This option allows you to import the parameters of the pre-trained model.')
+    parser.add_argument('--model_pretrained', type=str2bool, default=True, help='This option allows you to import the parameters of the pre-trained model.')
     parser.add_argument('--classes', type=int, default=10, help='(Important) Set how many categories your data is in.')
     parser.add_argument('--lr', type=float, default=0.001, help='Set the learning rate of the model.')
     parser.add_argument('--epochs', type=int, default=30, help='Set how many times the model will be trained. If it is 0, it is tested immediately without training.')
-    parser.add_argument('--printable', type=bool, default=True, help='Print the progress on the screen. True is recommended.')
-    parser.add_argument('--load_model', type=bool, default=False, help='This option is to set whether to use the saved model.')
+    parser.add_argument('--printable', type=str2bool, default=True, help='Print the progress on the screen. True is recommended.')
+    parser.add_argument('--load_model', type=str2bool, default=False, help='This option is to set whether to use the saved model.')
     parser.add_argument('--load_model_name', type=str, default="./data/model.pt", help='Set the location of the saved model. (The value of load_model must be True.)')
-    parser.add_argument('--save_model', type=bool, default=False, help='Set the location to save the model. (The value of save_model must be True.)')
+    parser.add_argument('--save_model', type=str2bool, default=False, help='Set the location to save the model. (The value of save_model must be True.)')
     parser.add_argument('--save_model_name', type=str, default="./data/model.pt", help='Location of save model files. (save_model must be True)')
-    parser.add_argument('--predict', type=bool, default=False, help='You can classify images using models.')
+    parser.add_argument('--predict', type=str2bool, default=False, help='You can classify images using models.')
     parser.add_argument('--predict_data_path', type=str, default=parser.parse_args().data_path + "predict/", help='Set the location of the images you want to classify.')
     run(parser.parse_args())
