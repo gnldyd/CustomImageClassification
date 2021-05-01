@@ -43,7 +43,7 @@ The program categorizes the images as follows.
 
 usage:
 ```
-python3 main.py [--gpu_parallel GPU_PARALLEL] [--gpu_index GPU_INDEX] [--data_path DATA_PATH] [--batch_size BATCH_SIZE] [--shuffle SHUFFLE] [--model_name MODEL_NAME] [--model_pretrained MODEL_PRETRAINED] [--classes CLASSES] [--lr LR] [--epochs EPOCHS] [--printable PRINTABLE] [--load_model LOAD_MODEL] [--load_model_name LOAD_MODEL_NAME] [--save_model SAVE_MODEL] [--save_model_name SAVE_MODEL_NAME] [--predict PREDICT]
+python3 main.py [--gpu_parallel GPU_PARALLEL] [--gpu_index GPU_INDEX] [--data_path DATA_PATH] [--batch_size BATCH_SIZE] [--shuffle SHUFFLE] [--model_name MODEL_NAME] [--model_pretrained MODEL_PRETRAINED] [--classes CLASSES] [--lr LR] [--epochs EPOCHS] [--load_model LOAD_MODEL] [--load_model_name LOAD_MODEL_NAME] [--save_model SAVE_MODEL] [--save_model_name SAVE_MODEL_NAME] [--predict PREDICT]
 
 ```
 
@@ -72,8 +72,6 @@ optional arguments:
 
 --epochs 30                 Set how many times the model will be trained.
                             If it is 0, it is tested immediately without training.
-
---printable True            Print the progress on the screen. True is recommended.
 
 --load_model False          This option is to set whether to use the saved model.
 
